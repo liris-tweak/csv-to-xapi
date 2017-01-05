@@ -5,7 +5,7 @@ Refer to the [xAPI Spec](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI.md
 
 ### Installation
 
-Run ``
+Run `git clone https://github.com/liris-tweak/csv-to-xapi.git`
 
 ### Use
 
