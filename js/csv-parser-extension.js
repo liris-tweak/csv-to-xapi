@@ -616,6 +616,14 @@ $('#-trace-upload-btn-').on('click', function() {
       if (options['--prefix']) {
         obj[path[i]] = options['--prefix'] + obj[path[i]];
       }
+      // Add the suffix to the value.
+      if (options['--suffix']) {
+        obj[path[i]] = obj[path[i]] + options['--suffix'];
+      }
+      // Transforme the value into number.
+      if (options['--toNumber']) {
+        obj[path[i]] = Number(obj[path[i]]);
+      }
     }
   }
   // Send 1x`cap` statements from the position `index` from the csv file datas.
