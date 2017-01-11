@@ -48,13 +48,9 @@ Once the web app launched :
 
      + For more complex use cases, the double-curly-braces notation accepts options,
        using the syntax ``{{*COLUMN_NAME* options}}``. Available options are:
-
-
-        --prefix *PREFIX_VALUE* : Add a prefix before the column value
-
-    --suffix *SUFFIX_VALUE* : Add suffix after the column value
-
-    --toNumber              : Formatted as a number (rather than a text string)
+       - --prefix *PREFIX_VALUE* : Add a prefix before the column value
+       - --suffix *SUFFIX_VALUE* : Add suffix after the column value
+       - --toNumber              : Formatted as a number (rather than a text string)
 
 
   + At the bottom of the third box, you can preview the generated statement in JSON.
