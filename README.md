@@ -3,11 +3,11 @@ Assisting in uploading a csv trace file onto an LRS as statements. This tool use
 
 Refer to the [xAPI Spec](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI.md) when using this tool to better understand how all the components work together.
 
-### features
+### Features
 
-You can to bind some fields of your csv file to a statement generator, in order to send a trace to an LRS. You c an also set constant values to your statements.
+You can to bind some fields of your csv file to a statement generator, in order to send a trace to an LRS. You can also set constant values to your statements.
 
-You can also define a column of the csv file as the column which value represents the *verb* of your statements. If so, each existing value in the chosen column has to be mapped with the statement generator.
+You can also define a column of the csv file as the column which value represents a *template* of your statements. If so, each existing value in the chosen column has to be mapped with the statement generator.
 
 ### Installation
 
@@ -19,27 +19,51 @@ Host this project on your server, then launch index.html.
 
 Once the web app launched :
 
- * Trace File (csv) Configuration
-  * Choose your trace file (csv format)
-  * Optionnal: You can save / use a configuration file to reuse your work
-  * Set the column headers
- * Verb Column Definition
-  * Choose a column which will define every verb you have in your trace.
-If you do not have such a column, still you can create a default verb.
-  * *Parse JSON* button will force apply the statement map of your current verb.
-  * *Upload Trace* Well, it opens a modal ... to upload your trace.
- * Statement Mapping
-  * You can set constant values in your statement fields or bind them to your csv file.
-  * You can copy statement mapping from another verb.
-  * Binding follows the format : `{{*COLUMN_NAME* options}}`. Options are :
+ * In the first box you can
+
+     + Choose your trace file (csv)
+     + Save your import configuration to a file / load a previously saved configuration
+     + Preview the table and customize column headers
 
 
-    --prefix *PREFIX_VALUE* : Add prefix to value
-    --suffix *SUFFIX_VALUE* : Add suffix to value
-    --toNumber              : Force number format for value
+ * Once a CSV file is loaded, in the second box, you have two choices
 
- * LRS Basic Auth Setup
-  * Here you define your LRS endpoint + username + password
+     + If all the rows have roughly the same structure, you can keep the default option ;
+       you will then have to describe a single template for all rows.
+     + If the rows have different structure/semantics depending on one column,
+       you should select this column as the "template column".
+       You will then be able to define as many templates as the different values
+       present in this column.
+     Then click on the small *edit* link between each template to edit it in the third box.
+     + The four bars for each template represent its level of completeness.
+
+
+  * The third box allows you to edit one of the template from the second box.
+
+     + You can also copy it from another template.
+     + For each xAPI field, you can either use
+       - a constant value, by typing it directly (e.g. ``john@doe.com``), or
+       - a value from a CSV column,
+         by typing the column name between double curly braces (e.g. ``{{email}}``).
+
+     + For more complex use cases, the double-curly-braces notation accepts options,
+       using the syntax ``{{*COLUMN_NAME* options}}``. Available options are:
+
+
+        --prefix *PREFIX_VALUE* : Add a prefix before the column value
+
+    --suffix *SUFFIX_VALUE* : Add suffix after the column value
+
+    --toNumber              : Formatted as a number (rather than a text string)
+
+
+  + At the bottom of the third box, you can preview the generated statement in JSON.
+    + The *Generate JSON Statement* button will force apply the changes in the third box to the current template.
+
+
+
+ * In the bottom box, you can setup LRS information (URL, username, password)
+   + The *Upload Trace* button will... well, upload the trace to the LRS.
 
 
 ## License
