@@ -38,7 +38,7 @@ Once the web app launched :
      + The four bars for each template represent its level of completeness.
 
 
-  * The third box allows you to edit one of the template from the second box.
+ * The third box allows you to edit one of the template from the second box.
 
      + You can also copy it from another template.
      + For each xAPI field, you can either use
