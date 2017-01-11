@@ -37,7 +37,7 @@ var _recommanded_values_list_ = [{
   'field': [
     'timestamp'
   ]
-},{
+}, {
   'set': false,
   'field': [
     'verb.display'
@@ -118,7 +118,7 @@ function create_header_inputs(column_count) {
   // create a line
   var tr = document.createElement('tr');
   // Show apply btn when input changes
-  function chi_input_func(evt){
+  function chi_input_func(evt) {
     $('#apply-column-header-btn').show();
   }
   // For chaque column, create an input
@@ -138,10 +138,10 @@ function create_header_inputs(column_count) {
 /**
  * Set the column header input values according to `_column_names_`.
  **/
-function update_header_inputs(){
+function update_header_inputs() {
   var id = '';
-  for(var i = 0; i < _column_names_.length; i++){
-    id = '#column-header-input-'+i;
+  for (var i = 0; i < _column_names_.length; i++) {
+    id = '#column-header-input-' + i;
     $(id)[0].value = _column_names_[i];
   }
 }
@@ -238,10 +238,9 @@ $('#verb-column-apply-btn').on('click', function(e) {
     return false;
   }
   // If the user chose not to use a column
-  if(_verb_column_position_ === -1){
+  if (_verb_column_position_ === -1) {
     verbs.push('__DEFAULT_STATEMENT__');
-  }
-  else{
+  } else {
     // Look for every different verb
     var start = $('#use-first-line-checkbox')[0].checked ? 1 : 0;
     for (var i = start; i < _source_data_.length; i++)
@@ -468,8 +467,8 @@ function update_mapping_progress(statement) {
  * user choices.
  * For example : `timestamp` might not be a real timestamp but a column name.
  **/
-function _check_ambigous_values_(stmt){
-  if(stmt.timestamp === 'Invalid date' && $('#statement-timestamp input')[0].value.indexOf('{{') !== -1){
+function _check_ambigous_values_(stmt) {
+  if (stmt.timestamp === 'Invalid date' && $('#statement-timestamp input')[0].value.indexOf('{{') !== -1) {
     stmt.timestamp = $('#statement-timestamp input')[0].value;
   }
 }
@@ -571,20 +570,19 @@ $("#-registration-id-trace-upload-btn-").on('click', function() {
  **/
 function _sendStatementQueue_(stmts) {
   return new Promise(
-  function(resolve, reject) {
-    setupConfig();
-    ADL.XAPIWrapper.sendStatements(stmts, function(r, obj) {
-      //console.log(r);
-      //console.log(obj);
-      // notification
-      if (r.status == 200) {
-        resolve();
-      }
-      else{
-        reject();
-      }
+    function(resolve, reject) {
+      setupConfig();
+      ADL.XAPIWrapper.sendStatements(stmts, function(r, obj) {
+        //console.log(r);
+        //console.log(obj);
+        // notification
+        if (r.status == 200) {
+          resolve();
+        } else {
+          reject();
+        }
+      });
     });
-  });
   // console.log(stmts);
   // return new Promise(
   //   function(resolve, reject) {
@@ -635,7 +633,7 @@ $('#-trace-upload-btn-').on('click', function() {
     // Loop to load 1x`cap` obsels.
     while (index < _source_data_.length && index - origin < cap) {
       var stmt = null;
-      if(_verb_column_position_ === -1) stmt = get_statement("__DEFAULT_STATEMENT__", true);
+      if (_verb_column_position_ === -1) stmt = get_statement("__DEFAULT_STATEMENT__", true);
       else stmt = get_statement(_source_data_[index][_verb_column_position_], true);
       for (var j = 0; j < stmt.mapping.length; j++) {
         var keys = stmt.mapping[j].path.split('.');
@@ -646,7 +644,7 @@ $('#-trace-upload-btn-').on('click', function() {
       statements_to_send.push(stmt.statement);
       index++;
     }
-    if(statements_to_send.length > 0){
+    if (statements_to_send.length > 0) {
       // Send the statement and wait for response.
       _sendStatementQueue_(statements_to_send).then(function() {
         // Update upload progress bar status
@@ -657,8 +655,7 @@ $('#-trace-upload-btn-').on('click', function() {
       }).catch(function(err) {
         console.log(err);
       });
-    }
-    else{
+    } else {
       $('#-trace-upload-progress-')[0].classList.add('progress-bar-success');
       $('#-trace-upload-progress-')[0].textContent = "Upload complete";
     }
@@ -690,8 +687,8 @@ function autocomplete_input(evt) {
   // Or a new match from input
   var match = evt.target.getAttribute('data-autocomplete-lastMatch');
   var reg = null;
-  if(!match) reg = regex.exec(txt);
-  if(reg && reg[1]) match = reg[1];
+  if (!match) reg = regex.exec(txt);
+  if (reg && reg[1]) match = reg[1];
   if (match) {
     // We lowercase the match.
     match = match.toLowerCase();
@@ -722,7 +719,7 @@ function autocomplete_input(evt) {
         if (headers.length > 1)
           evt.target.setAttribute('data-autocomplete-index', 1);
       }
-    // If the key stroke is not tabulation, we display tooltip with match.
+      // If the key stroke is not tabulation, we display tooltip with match.
     } else {
       evt.target.removeAttribute('data-autocomplete-lastMatch');
       evt.target.removeAttribute('data-autocomplete-index');
@@ -744,8 +741,7 @@ function autocomplete_input(evt) {
         }, 20);
       }
     }
-  }
-  else {
+  } else {
     $(evt.target).tooltip('hide');
   }
 }
@@ -811,6 +807,15 @@ function fill_form_with_statement(stmt) {
   }
   if (stmt.verb) {
     $("#verb-id")[0].value = stmt.verb.id || '';
+    if (stmt.verb.id) {
+      var _verb_code_name = stmt.verb.id.split('/')[stmt.verb.id.split('/').length - 1];
+      $("#predefined-verb option").filter(function() {
+        return this.text == _verb_code_name;
+      }).attr('selected', true);
+    }
+    else{
+      $("#predefined-verb option:nth-child(1)").attr('selected', true);
+    }
     if (stmt.verb.display) {
       keys = Object.keys(stmt.verb.display);
       $("#verb-display")[0].value = (keys.length > 0) ? stmt.verb.display[keys[0]] : '';
@@ -1044,7 +1049,7 @@ $('#-config-upload-btn-').on('change', function(evt) {
       $(str).attr('selected', 'selected');
       $('#verb-column-apply-btn').click();
       _statements_ = json._statements_;
-      for(var i = 0; i < _statements_.length; i++){
+      for (var i = 0; i < _statements_.length; i++) {
         update_mapping_progress(_statements_[i]);
       }
     };
@@ -1074,11 +1079,11 @@ function _guid_gen() {
 // MARK: TEST GET DATA FROM LRS
 **/
 
-function _check_lrs_status_function_(){
+function _check_lrs_status_function_() {
   var req = new XMLHttpRequest();
   req.open('GET', 'MY_LRS_URI', true);
   req.setRequestHeader("X-Experience-API-Version", "1.0.0");
-  req.setRequestHeader ("Authorization", "Basic " + btoa("MY_LRS_USERNAME" + ":" + "MY_LRS_PASSWORD"));
+  req.setRequestHeader("Authorization", "Basic " + btoa("MY_LRS_USERNAME" + ":" + "MY_LRS_PASSWORD"));
   req.onreadystatechange = function(aEvt) {
     if (req.readyState == 4) {
       if (req.status == 200)
