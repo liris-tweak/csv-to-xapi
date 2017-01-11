@@ -345,6 +345,7 @@ $('#verb-column-apply-btn').on('click', function(e) {
           console.log(_current_statement_.statement);
           fill_form_with_statement(_current_statement_.statement);
           set_copy_from_select(verb);
+          _update_editor_();
         }
     });
     div.appendChild(table);
@@ -362,10 +363,14 @@ $('#verb-column-apply-btn').on('click', function(e) {
  * Calls `update_mapping_progress`.
  **/
 $("#statement-builder-values").change(function() {
-  var stmt = buildStatement();
-  _check_ambigous_values_(stmt);
-  _current_statement_.statement = stmt;
-  update_mapping_progress();
+  if($('#automatically-build').is(':checked')){
+    var stmt = buildStatement();
+    _check_ambigous_values_(stmt);
+    _current_statement_.statement = stmt;
+    update_mapping_progress();
+    // Update editor
+    _update_editor_();
+  }
 });
 
 /**
@@ -377,7 +382,18 @@ $('#parse-json-btn').click(function(e) {
   _check_ambigous_values_(stmt);
   _current_statement_.statement = stmt;
   update_mapping_progress();
+  // Update editor
+  _update_editor_();
 });
+
+/**
+ * Update editor panel with statement.
+ **/
+function _update_editor_(){
+  var stmt = _current_statement_.statement;
+  editor.setValue(JSON.stringify(stmt, undefined, 4)); // or session.setValue
+  editor.clearSelection(); // or session.setValue
+}
 
 /**
  * Update the mapping progress bar of either a statement (param) or the current_statement.
