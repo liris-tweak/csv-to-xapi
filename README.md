@@ -62,6 +62,13 @@ Once the web app launched :
    + The *Upload Trace* button will... well, upload the trace to the LRS.
 
 
+ *  When you upload the trace to the LRS, the application will ask you a *registration ID*, and propose to generate one.
+   The registration ID is an attribute of each xAPI statement. When you query the LRS, you can filter statements by their registration ID (https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Communication.md#213-get-statements).
+
+   Actually, this is the only way to organize your statements in an LRS, so we suggest that you use a fresh registration ID for each trace that you upload in an LRS, and that you keep a list of the registration IDs of your traces.
+
+   Note also that registrations ID are required by the xAPI specification to be UUIDs. The application can generate an UUID for you using the standard UUID4 algorithm (https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29). The application generate such UUID using the following project [https://github.com/broofa/node-uuid](https://github.com/broofa/node-uuid).
+
 ## License
    Copyright &copy;2016 Advanced Distributed Learning
 
