@@ -478,6 +478,21 @@ function update_mapping_progress(statement) {
 // MARK: Statement Functions
 **/
 
+
+$('#generate_statement_from_json_btn').on('click', function(){
+  var stmt_text = editor.getValue();
+  var stmt = null;
+  try {
+    stmt = JSON.parse(stmt_text);
+    _check_ambigous_values_(stmt);
+    fill_form_with_statement(stmt);
+    _current_statement_.statement = stmt;
+    update_mapping_progress();
+  } catch (e) {
+    notify({ message: "Invalid JSON, cannot generate statement.\n" + e });
+  }
+});
+
 /**
  * Check value automatically set by the original application in order to force
  * user choices.
@@ -966,7 +981,6 @@ function fill_form_with_statement(stmt) {
   }
   if (stmt.context) {
     $("#context-language")[0].value = stmt.context.language || '';
-    $("#context-registration-id")[0].value = stmt.context.registration || '';
     $("#context-revision")[0].value = stmt.context.revision || '';
     $("#context-platform")[0].value = stmt.context.platform || '';
     $("#context-extensions")[0].value = (stmt.context.extensions) ? JSON.stringify(stmt.context.extensions) : '';
