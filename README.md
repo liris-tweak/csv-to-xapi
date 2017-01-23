@@ -51,10 +51,11 @@ Once the web app launched :
        - --prefix *PREFIX_VALUE* : Add a prefix before the column value
        - --suffix *SUFFIX_VALUE* : Add suffix after the column value
        - --toNumber              : Formatted as a number (rather than a text string)
+     + The *`Generate JSON Statement`* button will force apply the changes in the third box to the current template.
 
 
-  + At the bottom of the third box, you can preview the generated statement in JSON.
-    + The *Generate JSON Statement* button will force apply the changes in the third box to the current template.
+ * At the bottom of the third box, you can preview the generated statement in JSON.
+    + The *`Generate statement from JSON`* button will force apply the changes `FROM` the editor box `TO` the template. This feature is designed for the users who know how to edit a correct statement JSON.
 
 
 
