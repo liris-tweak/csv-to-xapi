@@ -344,7 +344,6 @@ $('#verb-column-apply-btn').on('click', function(e) {
       for (var i = 0; i < _statements_.length; i++)
         if (_statements_[i].verb === verb) {
           _current_statement_ = _statements_[i];
-          console.log(_current_statement_.statement);
           fill_form_with_statement(_current_statement_.statement);
           set_copy_from_select(verb);
           _update_editor_();
@@ -632,7 +631,6 @@ function _sendStatementQueue_(stmts) {
  **/
 $('#-trace-upload-btn-').on('click', function() {
   generate_statements_mappings();
-  console.log(_statements_);
   // Reset the upload progress bar
   $('#-trace-upload-progress-')[0].classList.remove('progress-bar-success');
   $('#-trace-upload-progress-')[0].textContent = $('#-trace-upload-progress-')[0].style.width = "0%";
