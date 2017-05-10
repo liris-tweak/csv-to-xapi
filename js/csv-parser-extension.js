@@ -57,6 +57,7 @@ var _recommanded_values_list_ = [{
 $('#upload-btn').change(function(e) {
   Papa.parse($('#upload-btn')[0].files[0], {
     skipEmptyLines: true,
+    delimiter: $('#separator-select').val(),
     complete: function(res) {
       _source_data_ = res.data;
       $('#preview-table tr').remove();
@@ -85,6 +86,7 @@ $('#upload-btn').change(function(e) {
     }
   });
 });
+
 
 /**-----------------------------------------------------------------------------
 // MARK: Column Header Definition
@@ -542,9 +544,10 @@ function get_mapping_properties(stmt) {
   // Fill the result array.
   function look_for_property(parent, path) {
     for (var child in parent) {
-      var new_path = path;
-      if (new_path !== '') new_path += '.';
-      new_path += child;
+      var new_path = [];
+      for(var i = 0 ; i < path.length; i++)
+        new_path.push(path[i]);
+      new_path.push(child);
       if (typeof parent[child] === 'object') {
         look_for_property(parent[child], new_path);
       } else {
@@ -573,7 +576,7 @@ function get_mapping_properties(stmt) {
       }
     }
   }
-  look_for_property(stmt, '');
+  look_for_property(stmt, []);
   return result;
 }
 
@@ -629,13 +632,13 @@ function _sendStatementQueue_(stmts) {
  **/
 $('#-trace-upload-btn-').on('click', function() {
   generate_statements_mappings();
+  console.log(_statements_);
   // Reset the upload progress bar
   $('#-trace-upload-progress-')[0].classList.remove('progress-bar-success');
   $('#-trace-upload-progress-')[0].textContent = $('#-trace-upload-progress-')[0].style.width = "0%";
   // Basically do `obj`[`path`] = `value`.
   function setToValue(obj, value, path, options) {
     var i;
-    path = path.split('.');
     for (i = 0; i < path.length - 1; i++)
       obj = obj[path[i]];
     obj[path[i]] = value;
@@ -654,6 +657,10 @@ $('#-trace-upload-btn-').on('click', function() {
         obj[path[i]] = Number(obj[path[i]]);
       }
     }
+    if(obj[path[i]] === null || obj[path[i]] === undefined){
+      obj[path[i]] = "";
+    }
+
   }
   // Send 1x`cap` statements from the position `index` from the csv file datas.
   function sendPackage(index, cap) {
@@ -667,7 +674,7 @@ $('#-trace-upload-btn-').on('click', function() {
       if (_verb_column_position_ === -1) stmt = get_statement("__DEFAULT_STATEMENT__", true);
       else stmt = get_statement(_source_data_[index][_verb_column_position_], true);
       for (var j = 0; j < stmt.mapping.length; j++) {
-        var keys = stmt.mapping[j].path.split('.');
+        var keys = stmt.mapping[j].path;
         setToValue(stmt.statement, _source_data_[index][stmt.mapping[j].column], stmt.mapping[j].path, stmt.mapping[j].options);
       }
       stmt.statement.context = stmt.context || {};
@@ -687,6 +694,7 @@ $('#-trace-upload-btn-').on('click', function() {
         console.log(err);
       });
     } else {
+      saveLogs();
       $('#-trace-upload-progress-')[0].classList.add('progress-bar-success');
       $('#-trace-upload-progress-')[0].textContent = "Upload complete";
     }
@@ -696,6 +704,41 @@ $('#-trace-upload-btn-').on('click', function() {
   // Start the upload.
   sendPackage(start, 1000);
 });
+
+
+function saveLogs(){
+    var logString = "";
+    // UUID
+    logString += "Registration id : "+ $('#-registration-id-trace-upload-')[0].value + "\n\n";
+    logString += "Origin file : " +  $('#upload-btn')[0].files[0].name + "\n\n";
+    // Splitted
+    if(_verb_column_position_ !== -1){
+      logString += "Typified by : "+ _source_data_[0][_verb_column_position_] + "\n\n";
+    }
+    logString += "Statements mapping : \n";
+    for(var i = 0; i < _statements_.length; i++){
+      logString += "    Verb : "+_statements_[i].verb+"\n";
+      logString += "    Mapping : \n";
+      for(var j = 0 ; j < _statements_[i].mapping.length; j++){
+        logString += "        " + _source_data_[0][_statements_[i].mapping[j].column]+" : ";
+        for(var k = 0 ; k < _statements_[i].mapping[j].path.length - 1; k++){
+          logString += _statements_[i].mapping[j].path[k] + ' > '
+        }
+        logString += _statements_[i].mapping[j].path[k] + "\n";
+      }
+      logString += "    ============================================================== \n";
+    }
+    // The text of the file.
+    var txt = "data:text/json;charset=utf-8," + logString;
+    // And here we send.
+    var encodedUri = encodeURI(txt);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "trace_upload_logs.txt");
+    document.body.appendChild(link); // Required for FF
+    link.click();
+    document.body.removeChild(link);
+};
 
 /** ----------------------------------------------------------------------------
 // MARK: Autocomplete Functions
