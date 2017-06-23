@@ -6,7 +6,7 @@
 
 // Statement parsing regex. Used to set the values of a statement from a csv file.
 var global_regexp_for_csv_parsing = /{{([\w]+)?\s?(.*)}}/g;
-var options_regexp_for_csv_parsing = /--[\w]*\s?[^-^\s]*/g;
+var options_regexp_for_csv_parsing = /--[\w]*\s?[^\s]*/g;
 // Name of the headers of each columns of the csv file.
 var _column_names_ = [];
 // The csv file parsed.
@@ -562,6 +562,7 @@ function get_mapping_properties(stmt) {
               var tosplit = matches[0];
               var splitted = tosplit.split(' ');
               options[splitted[0]] = splitted[1];
+              if(splitted[1] === undefined) options[splitted[0]] = true;
               matches = options_regexp_for_csv_parsing.exec(m[2]);
             }
           }
