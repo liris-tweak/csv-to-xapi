@@ -9,6 +9,13 @@ You can to bind some fields of your csv file to a statement generator, in order 
 
 You can also define a column of the csv file as the column which value represents a *template* of your statements. If so, each existing value in the chosen column has to be mapped with the statement generator.
 
+### Links
+
+ * [xAPI Standard Vocabulary](http://xapi.vocab.pub/datasets/adl/)
+ * [Communities of pratice](https://www.adlnet.gov/adl-research/performance-tracking-analysis/experience-api/xapi-community-of-practice-cop/)
+ * [Serious Game Community of practice vocabulary](http://xapi.e-ucm.es/vocab/seriousgames)
+
+
 ### Installation
 
 Run `git clone https://github.com/liris-tweak/csv-to-xapi.git`
