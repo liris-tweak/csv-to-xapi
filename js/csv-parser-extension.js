@@ -10,7 +10,9 @@ var options_regexp_for_csv_parsing = /--[\w]*\s?[^\s]*/g;
 // Name of the headers of each columns of the csv file.
 var _column_names_ = [];
 // The csv file parsed.
-var _source_data_ = [];
+var _preview_data_ = [];
+// List of the verbs
+var _verbs_ = [];
 // Index of the column chosen to set the verb of each statement.
 var _verb_column_position_ = -1;
 // The statements maps.
@@ -21,28 +23,28 @@ var _current_statement_ = {};
 var _DOM_verb_list_div_ = [];
 // The required value field list.
 var _required_values_list_ = [{
-  'set': false,
-  'field': [
-    'actor.mbox', 'actor.mboxsha', 'actor.openid', 'actor.account'
-  ]
-}, {
-  'set': false,
-  'field': [
-    'verb.id'
-  ]
-}];
+    'set': false,
+    'field': [
+      'actor.mbox', 'actor.mboxsha', 'actor.openid', 'actor.account'
+    ]
+  }, {
+    'set': false,
+    'field': [
+      'verb.id'
+    ]
+  }];
 // The recommanded value field list
 var _recommanded_values_list_ = [{
-  'set': false,
-  'field': [
-    'timestamp'
-  ]
-}, {
-  'set': false,
-  'field': [
-    'verb.display'
-  ]
-}];
+    'set': false,
+    'field': [
+      'timestamp'
+    ]
+  }, {
+    'set': false,
+    'field': [
+      'verb.display'
+    ]
+  }];
 
 /**-----------------------------------------------------------------------------
 // MARK: Upload CSV
@@ -57,15 +59,16 @@ var _recommanded_values_list_ = [{
 $('#upload-btn').change(function(e) {
   Papa.parse($('#upload-btn')[0].files[0], {
     skipEmptyLines: true,
+    preview: 5,
     delimiter: $('#separator-select').val(),
     complete: function(res) {
-      _source_data_ = res.data;
+      _preview_data_ = res.data;
       $('#preview-table tr').remove();
       // Insert title
       var html = '';
       html += '<tr>';
-      for (var j = 0; j < _source_data_[0].length; j++) {
-        _column_names_[j] = $('#use-first-line-checkbox')[0].checked ? _source_data_[0][j] : 'column' + j;
+      for (var j = 0; j < _preview_data_[0].length; j++) {
+        _column_names_[j] = $('#use-first-line-checkbox')[0].checked ? _preview_data_[0][j] : 'column' + j;
         html += '<th>' + _column_names_[j] + '</th>';
       }
       html += '</tr>';
@@ -74,14 +77,14 @@ $('#upload-btn').change(function(e) {
       for (var i = 0; i < 3; i++) {
         html = '';
         html += '<tr>';
-        for (j = 0; j < _source_data_[i].length; j++) {
-          html += '<td>' + _source_data_[i][j] + '</td>';
+        for (j = 0; j < _preview_data_[i].length; j++) {
+          html += '<td>' + _preview_data_[i][j] + '</td>';
         }
         html += '</tr>';
         $('#preview-table tr').last().after(html);
       }
       //create input for header definition
-      create_header_inputs(_source_data_[0].length);
+      create_header_inputs(_preview_data_[0].length);
       update_verb_column_select();
     }
   });
@@ -174,10 +177,10 @@ function update_preview_column_header() {
  **/
 $('#use-first-line-checkbox').change(function(e) {
   if ($('#use-first-line-checkbox')[0].checked) {
-    if (_source_data_.length > 0) {
+    if (_preview_data_.length > 0) {
       _column_names_ = [];
-      for (var i = 0; i < _source_data_[0].length; i++) {
-        _column_names_[i] = _source_data_[0][i];
+      for (var i = 0; i < _preview_data_[0].length; i++) {
+        _column_names_[i] = _preview_data_[0][i];
       }
       update_preview_column_header();
     }
@@ -197,8 +200,8 @@ function update_preview_table() {
   for (var i = start; i < 3; i++) {
     html = '';
     html += '<tr>';
-    for (j = 0; j < _source_data_[i].length; j++) {
-      html += '<td>' + _source_data_[i][j] + '</td>';
+    for (j = 0; j < _preview_data_[i].length; j++) {
+      html += '<td>' + _preview_data_[i][j] + '</td>';
     }
     html += '</tr>';
     $('#preview-table tr').last().after(html);
@@ -222,6 +225,36 @@ function update_verb_column_select() {
 }
 
 /**
+ * Fill the `verb-column-select` with the verbs.
+ **/
+function get_verbs_list(){
+  var start = $('#use-first-line-checkbox')[0].checked ? 1 : 0;
+  // Returns true if `value` exists in `list`. Return false otherwise.
+  function contains(list, value) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] === value) return true;
+    }
+    return false;
+  }
+  // Parse the file with chunks in a worker.
+  Papa.parse($('#upload-btn')[0].files[0], {
+    skipEmptyLines: true,
+    worker: true,
+    chunk: function(results, parser) {
+      var data = results.data;
+      for (var i = start; i < data.length; i++)
+       if (data[i][_verb_column_position_] !== undefined && !contains(_verbs_, data[i][_verb_column_position_]))
+         _verbs_.push(data[i][_verb_column_position_]);
+      if(start === 1) start = 0;
+    },
+    delimiter: $('#separator-select').val(),
+    complete: function(res) {
+      create_statement_templates();
+    }
+  });
+}
+
+/**
  * Find all the verbs and create the verb divs.
  * Create the progress bar for each verb.
  */
@@ -231,24 +264,21 @@ $('#verb-column-apply-btn').on('click', function(e) {
   // Reset the statements list.
   _statements_ = [];
   // The list of verbs existing in the csv file.
-  var verbs = [];
-  // Returns true if `value` exists in `list`. Return false otherwise.
-  function contains(list, value) {
-    for (var i = 0; i < list.length; i++) {
-      if (list[i] === value) return true;
-    }
-    return false;
-  }
+  _verbs_ = [];
   // If the user chose not to use a column
   if (_verb_column_position_ === -1) {
-    verbs.push('__DEFAULT_STATEMENT__');
+    _verbs_.push('__DEFAULT_STATEMENT__');
+    create_statement_templates();
   } else {
-    // Look for every different verb
-    var start = $('#use-first-line-checkbox')[0].checked ? 1 : 0;
-    for (var i = start; i < _source_data_.length; i++)
-      if (_source_data_[i][_verb_column_position_] !== undefined && !contains(verbs, _source_data_[i][_verb_column_position_]))
-        verbs.push(_source_data_[i][_verb_column_position_]);
+    get_verbs_list();
   }
+});
+
+/**
+ * Create a steatement template for each "verb".
+ **/
+function create_statement_templates(){
+  var verbs = _verbs_;
   // For every verb, creates a new statement object.
   for (i = 0; i < verbs.length; i++) {
     _statements_.push({
@@ -353,7 +383,7 @@ $('#verb-column-apply-btn').on('click', function(e) {
     div.appendChild(btn);
     $('#verbs-list-div').append(div);
   }
-});
+};
 
 /**-----------------------------------------------------------------------------
 // MARK: Mapping Progress
@@ -620,7 +650,7 @@ function _sendStatementQueue_(stmts) {
   // console.log(stmts);
   // return new Promise(
   //   function(resolve, reject) {
-  //     setTimeout(resolve, 1000);
+  //     setTimeout(resolve, 10);
   //   }
   // );
 }
@@ -635,6 +665,19 @@ $('#-trace-upload-btn-').on('click', function() {
   // Reset the upload progress bar
   $('#-trace-upload-progress-')[0].classList.remove('progress-bar-success');
   $('#-trace-upload-progress-')[0].textContent = $('#-trace-upload-progress-')[0].style.width = "0%";
+
+  // Beginning of the loop (header on first line or not)
+  var start = $('#use-first-line-checkbox')[0].checked ? 1 : 0;
+  // Chunk index
+  var chunk_index = 0;
+  // Chunk size
+  var chunk_size = 10000000;
+  // File size
+  var file_size = $('#upload-btn')[0].files[0].size;
+  // Paerser resume function
+  var resume = null;
+  // True when parse.complete is called.
+  var completed = false;
   // Basically do `obj`[`path`] = `value`.
   function setToValue(obj, value, path, options) {
     var i;
@@ -659,22 +702,22 @@ $('#-trace-upload-btn-').on('click', function() {
     if(obj[path[i]] === null || obj[path[i]] === undefined){
       obj[path[i]] = "";
     }
-
   }
+
   // Send 1x`cap` statements from the position `index` from the csv file datas.
-  function sendPackage(index, cap) {
+  function sendPackage(index, cap, data) {
     // List of statements to send.
     var statements_to_send = [];
     // origin index
     var origin = index;
     // Loop to load 1x`cap` obsels.
-    while (index < _source_data_.length && index - origin < cap) {
+    while (index < data.length && index - origin < cap) {
       var stmt = null;
       if (_verb_column_position_ === -1) stmt = get_statement("__DEFAULT_STATEMENT__", true);
-      else stmt = get_statement(_source_data_[index][_verb_column_position_], true);
+      else stmt = get_statement(data[index][_verb_column_position_], true);
       for (var j = 0; j < stmt.mapping.length; j++) {
         var keys = stmt.mapping[j].path;
-        setToValue(stmt.statement, _source_data_[index][stmt.mapping[j].column], stmt.mapping[j].path, stmt.mapping[j].options);
+        setToValue(stmt.statement, data[index][stmt.mapping[j].column], stmt.mapping[j].path, stmt.mapping[j].options);
       }
       stmt.statement.context = stmt.context || {};
       stmt.statement.context.registration = $('#-registration-id-trace-upload-')[0].value;
@@ -685,23 +728,43 @@ $('#-trace-upload-btn-').on('click', function() {
       // Send the statement and wait for response.
       _sendStatementQueue_(statements_to_send).then(function() {
         // Update upload progress bar status
-        $('#-trace-upload-progress-')[0].style.width = ((index / _source_data_.length) * 100) + '%';
-        $('#-trace-upload-progress-')[0].textContent = Math.floor((index / _source_data_.length) * 100) + '%';
+        $('#-trace-upload-progress-')[0].style.width = Math.floor((( chunk_index * chunk_size / file_size ) * 100) + ((index / data.length) * (chunk_size / file_size) * 100)) + '%';
+        $('#-trace-upload-progress-')[0].textContent = Math.floor(((( chunk_index * chunk_size / file_size ) * 100) + ((index / data.length) * (chunk_size / file_size) * 100))) + '%';
         // Send the rest of the datas.
-        sendPackage(index, cap);
+        sendPackage(index, cap, data);
       }).catch(function(err) {
         console.log(err);
       });
     } else {
-      saveLogs();
-      $('#-trace-upload-progress-')[0].classList.add('progress-bar-success');
-      $('#-trace-upload-progress-')[0].textContent = "Upload complete";
+      chunk_index += 1;
+      if(!completed) resume();
+      else{
+        saveLogs();
+        $('#-trace-upload-progress-')[0].style.width = "100%";
+        $('#-trace-upload-progress-')[0].classList.add('progress-bar-success');
+        $('#-trace-upload-progress-')[0].textContent = "Upload complete";
+      }
     }
   }
-  // Beginning of the loop (header on first line or not)
-  var start = $('#use-first-line-checkbox')[0].checked ? 1 : 0;
-  // Start the upload.
-  sendPackage(start, 1000);
+
+  Papa.parse($('#upload-btn')[0].files[0], {
+    skipEmptyLines: true,
+    chunk: function(results, parser) {
+      parser.pause();
+      resume = parser.resume;
+      var data = results.data;
+
+      // Start the upload.
+      sendPackage(start, 1000, data);
+
+      if(start === 1) start = 0;
+    },
+    delimiter: $('#separator-select').val(),
+    complete: function(res) {
+      completed = true;
+    }
+  });
+
 });
 
 
@@ -712,14 +775,14 @@ function saveLogs(){
     logString += "Origin file : " +  $('#upload-btn')[0].files[0].name + "\n\n";
     // Splitted
     if(_verb_column_position_ !== -1){
-      logString += "Typified by : "+ _source_data_[0][_verb_column_position_] + "\n\n";
+      logString += "Typified by : "+ _preview_data_[0][_verb_column_position_] + "\n\n";
     }
     logString += "Statements mapping : \n";
     for(var i = 0; i < _statements_.length; i++){
       logString += "    Verb : "+_statements_[i].verb+"\n";
       logString += "    Mapping : \n";
       for(var j = 0 ; j < _statements_[i].mapping.length; j++){
-        logString += "        " + _source_data_[0][_statements_[i].mapping[j].column]+" : ";
+        logString += "        " + _preview_data_[0][_statements_[i].mapping[j].column]+" : ";
         for(var k = 0 ; k < _statements_[i].mapping[j].path.length - 1; k++){
           logString += _statements_[i].mapping[j].path[k] + ' > '
         }
