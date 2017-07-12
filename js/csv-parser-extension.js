@@ -60,8 +60,9 @@ $('#upload-btn').change(function(e) {
   Papa.parse($('#upload-btn')[0].files[0], {
     skipEmptyLines: true,
     preview: 5,
+    worker: true,
     delimiter: $('#separator-select').val(),
-    complete: function(res) {
+    chunk: function(res){
       _preview_data_ = res.data;
       $('#preview-table tr').remove();
       // Insert title
@@ -86,7 +87,8 @@ $('#upload-btn').change(function(e) {
       //create input for header definition
       create_header_inputs(_preview_data_[0].length);
       update_verb_column_select();
-    }
+    },
+    complete: function() {}
   });
 });
 
